@@ -86,13 +86,24 @@ celix_status_t celix_dmServiceDependency_setRequired(celix_dm_service_dependency
 
 	if (!dependency) {
 		status = CELIX_ILLEGAL_ARGUMENT;
+	} else {
+        if (required && dependency->minimalCardinality == 0) {
+            dependency->minimalCardinality = 1;
+        } else if (!required) {
+            dependency->minimalCardinality = 0;
+        }
 	}
-
-	if (status == CELIX_SUCCESS) {
-		dependency->required = required;
-	}
-
 	return status;
+}
+
+celix_status_t celix_dmServiceDependency_setMinimalCardinality(celix_dm_service_dependency_t *dependency, size_t minimalCardinality) {
+    celix_status_t status = CELIX_SUCCESS;
+    if (!dependency) {
+        status = CELIX_ILLEGAL_ARGUMENT;
+    } else {
+        dependency->minimalCardinality = minimalCardinality;
+    }
+    return status;
 }
 
 celix_status_t serviceDependency_setAddCLanguageFilter(celix_dm_service_dependency_t *dependency, bool addCLangFilter) {
@@ -325,13 +336,14 @@ celix_status_t celix_dmServiceDependency_invokeRemove(celix_dm_service_dependenc
 
 bool celix_dmServiceDependency_isAvailable(celix_dm_service_dependency_t *dependency) {
     celixThreadMutex_lock(&dependency->mutex);
-    bool avail = dependency->trackedSvcCount > 0;
+    bool avail = (dependency->minimalCardinality == 0) ? (dependency->trackedSvcCount > 0)
+                                                       : (dependency->trackedSvcCount >= dependency->minimalCardinality);
     celixThreadMutex_unlock(&dependency->mutex);
     return avail;
 }
 
 bool celix_dmServiceDependency_isRequired(const celix_dm_service_dependency_t* dep) {
-    return dep->required;
+    return dep->minimalCardinality > 0;
 }
 
 bool celix_dmServiceDependency_isTrackerOpen(celix_dm_service_dependency_t* dependency) {
@@ -360,16 +372,18 @@ celix_status_t serviceDependency_getServiceDependencyInfo(celix_dm_service_depen
 
 dm_service_dependency_info_t* celix_dmServiceDependency_createInfo(celix_dm_service_dependency_t* dep) {
 	celix_dm_service_dependency_info_t *info = calloc(1, sizeof(*info));
-	if (info != NULL) {
-		celixThreadMutex_lock(&dep->mutex);
-		info->available = dep->trackedSvcCount > 0;
-		info->serviceName = celix_utils_strdup(dep->serviceName);
-		info->filter = celix_utils_strdup(dep->filter);
-		info->versionRange = celix_utils_strdup(dep->versionRange);
-		info->required = dep->required;
-		info->count = dep->trackedSvcCount;
-		celixThreadMutex_unlock(&dep->mutex);
-	}
+    if (info != NULL) {
+        celixThreadMutex_lock(&dep->mutex);
+        info->available = (dep->minimalCardinality == 0) ? (dep->trackedSvcCount > 0)
+                                                         : (dep->trackedSvcCount >= dep->minimalCardinality);
+        info->minimalCardinality = dep->minimalCardinality;
+        info->serviceName = celix_utils_strdup(dep->serviceName);
+        info->filter = celix_utils_strdup(dep->filter);
+        info->versionRange = celix_utils_strdup(dep->versionRange);
+        info->required = dep->minimalCardinality > 0;
+        info->count = dep->trackedSvcCount;
+        celixThreadMutex_unlock(&dep->mutex);
+    }
 	return info;
 }
 

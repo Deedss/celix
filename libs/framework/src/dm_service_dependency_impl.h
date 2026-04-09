@@ -51,7 +51,6 @@ struct celix_dm_service_dependency {
 	char *serviceName;
     char *filter;
     char *versionRange;
-    bool required;
     dm_service_dependency_strategy_t strategy;
     bool addCLanguageFilter;
     celix_dm_component_t *component;
@@ -60,7 +59,8 @@ struct celix_dm_service_dependency {
     long svcTrackerId; //active tracker id
     size_t nrOfActiveStoppingTrackers; //nr of async stop tracker still active (should be 0 or 1)
     size_t trackedSvcCount;
-    void* callbackHandle; //This handle can be set to be used instead of the component implementation
+    size_t minimalCardinality; // minimal nr of service required for availability
+    void* callbackHandle;      // This handle can be set to be used instead of the component implementation
 };
 
 celix_status_t celix_dmServiceDependency_enable(celix_dm_service_dependency_t *dependency);

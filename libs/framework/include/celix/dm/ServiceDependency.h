@@ -166,6 +166,16 @@ namespace celix { namespace dm {
         CServiceDependency<T,I>& setRequired(bool req);
 
         /**
+         * Specify the minimum number of services the service dependency requires before being counted as available.
+         *
+         * The minimal cardinality also affects whether a service is required. By default, the minimal cardinality is 0,
+         * implying that a service is not required.
+         *
+         * @return the C service dependency reference for chaining (fluent API)
+         */
+        CServiceDependency<T,I>& setMinimalCardinality(size_t minimalCardinality);
+
+        /**
          * Specify if the update strategy to use
          *
          * @return the C service dependency reference for chaining (fluent API)
@@ -414,6 +424,16 @@ namespace celix { namespace dm {
          * @return the service dependency reference for chaining (fluent API)
          */
         ServiceDependency<T,I>& setRequired(bool req);
+
+        /**
+         * Specify the minimum number of services the service dependency requires before being counted as available.
+         *
+         * The minimal cardinality also affects whether a service is required. By default, the minimal cardinality is 0,
+         * implying that a service is not required.
+         *
+         * @return the service dependency reference for chaining (fluent API)
+         */
+        ServiceDependency<T,I>& setMinimalCardinality(size_t minimalCardinality);
 
         /**
          * Specify if the update strategy to use
