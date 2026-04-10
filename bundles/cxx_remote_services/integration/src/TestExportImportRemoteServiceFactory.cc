@@ -262,16 +262,16 @@ private:
 
         auto& cmp = ctx->getDependencyManager()->createComponent(std::make_unique<ImportedCalculator>(logHelper));
         cmp.createServiceDependency<pubsub_publisher>(PUBSUB_PUBLISHER_SERVICE_NAME)
-                .setRequired(true)
+                .setMinimalCardinality(1)
                 .setStrategy(DependencyUpdateStrategy::suspend)
                 .setFilter(std::string{"(&(topic="}.append(invokeTopic).append(")(scope=").append(scope).append("))"))
                 .setCallbacks(&ImportedCalculator::setPublisher);
         cmp.createServiceDependency<celix::PromiseFactory>()
-                .setRequired(true)
+                .setMinimalCardinality(1)
                 .setStrategy(DependencyUpdateStrategy::suspend)
                 .setCallbacks(&ImportedCalculator::setPromiseFactory);
         cmp.createServiceDependency<celix::PushStreamProvider>()
-                .setRequired(true)
+                .setMinimalCardinality(1)
                 .setStrategy(DependencyUpdateStrategy::suspend)
                 .setCallbacks(&ImportedCalculator::setPushStreamProvider);
 
@@ -514,18 +514,18 @@ private:
 
         auto& cmp = ctx->getDependencyManager()->createComponent(std::make_unique<ExportedCalculator>(logHelper));
         cmp.createServiceDependency<pubsub_publisher>(PUBSUB_PUBLISHER_SERVICE_NAME)
-                .setRequired(true)
+                .setMinimalCardinality(1)
                 .setStrategy(DependencyUpdateStrategy::suspend)
                 .setFilter(std::string{"(&(topic="}.append(returnTopic).append(")(scope=").append(scope).append("))"))
                 .setCallbacks(&ExportedCalculator::setPublisher);
 
         cmp.createServiceDependency<celix::PromiseFactory>()
-                .setRequired(true)
+                .setMinimalCardinality(1)
                 .setStrategy(DependencyUpdateStrategy::suspend)
                 .setCallbacks(&ExportedCalculator::setPromiseFactory);
 
         cmp.createServiceDependency<ICalculator>()
-                .setRequired(true)
+                .setMinimalCardinality(1)
                 .setStrategy(DependencyUpdateStrategy::suspend)
                 .setFilter(std::string{"("}.append(celix::SERVICE_ID).append("=").append(svcId).append(")"))
                 .setCallbacks(&ExportedCalculator::setICalculator);

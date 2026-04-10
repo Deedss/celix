@@ -120,12 +120,6 @@ CServiceDependency<T,I>& CServiceDependency<T,I>::setAddLanguageFilter(bool addL
 }
 
 template<class T, typename I>
-CServiceDependency<T,I>& CServiceDependency<T,I>::setRequired(bool req) {
-    celix_dmServiceDependency_setRequired(this->cServiceDependency(), req);
-    return *this;
-}
-
-template<class T, typename I>
 CServiceDependency<T,I>& CServiceDependency<T,I>::setMinimalCardinality(size_t minimalCardinality) {
     celix_dmServiceDependency_setMinimalCardinality(this->cServiceDependency(), minimalCardinality);
     return *this;
@@ -491,13 +485,6 @@ ServiceDependency<T,I>& ServiceDependency<T,I>::setCallbacks(
                 remove(service);
             }
     );
-    return *this;
-}
-
-
-template<class T, class I>
-ServiceDependency<T,I>& ServiceDependency<T,I>::setRequired(bool req) {
-    celix_dmServiceDependency_setRequired(this->cServiceDependency(), req);
     return *this;
 }
 

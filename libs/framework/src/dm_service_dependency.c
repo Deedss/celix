@@ -77,25 +77,6 @@ void celix_dmServiceDependency_destroy(celix_dm_service_dependency_t *dep) {
     }
 }
 
-celix_status_t serviceDependency_setRequired(celix_dm_service_dependency_t *dependency, bool required) {
-	return celix_dmServiceDependency_setRequired(dependency, required);
-}
-
-celix_status_t celix_dmServiceDependency_setRequired(celix_dm_service_dependency_t *dependency, bool required) {
-	celix_status_t status = CELIX_SUCCESS;
-
-	if (!dependency) {
-		status = CELIX_ILLEGAL_ARGUMENT;
-	} else {
-        if (required && dependency->minimalCardinality == 0) {
-            dependency->minimalCardinality = 1;
-        } else if (!required) {
-            dependency->minimalCardinality = 0;
-        }
-	}
-	return status;
-}
-
 celix_status_t celix_dmServiceDependency_setMinimalCardinality(celix_dm_service_dependency_t *dependency, size_t minimalCardinality) {
     celix_status_t status = CELIX_SUCCESS;
     if (!dependency) {

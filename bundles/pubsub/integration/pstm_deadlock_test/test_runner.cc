@@ -105,7 +105,7 @@ public:
                     .setFilter("(topic=deadlock)(scope=scope2)")
                     .setStrategy(celix::dm::DependencyUpdateStrategy::suspend)
                     .setCallbacks([](const pubsub_publisher_t *, Properties&&) { std::cout << "success\n"; })
-                    .setRequired(true)
+                    .setMinimalCardinality(1)
                     .build();
         }
         act->promise.set_value();
@@ -148,7 +148,7 @@ TEST_F(DeadlockTestSuite, test) {
             .setFilter("(topic=deadlock)(scope=scope)")
             .setStrategy(celix::dm::DependencyUpdateStrategy::suspend)
             .setCallbacks([&cmp](const pubsub_publisher_t *pub, Properties&&) { cmp.getInstance().setPublisher(pub); })
-            .setRequired(true);
+            .setMinimalCardinality(1);
 
     ASSERT_TRUE(cmp.isValid());
     mng->start();

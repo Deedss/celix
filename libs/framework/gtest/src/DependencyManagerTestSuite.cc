@@ -23,6 +23,7 @@
 #include <cstdint>
 
 #include "celix/dm/DependencyManager.h"
+#include "celix_dm_service_dependency.h"
 #include "celix_framework_factory.h"
 #include "framework.h"
 
@@ -217,7 +218,7 @@ TEST_F(DependencyManagerTestSuite, TestCheckActive) {
 
     auto *dep = celix_dmServiceDependency_create();
     celix_dmServiceDependency_setService(dep, "svcname", nullptr, nullptr);
-    celix_dmServiceDependency_setRequired(dep, true);
+    celix_dmServiceDependency_setMinimalCardinality(dep, 1);
     celix_dmComponent_addServiceDependency(cmp, dep); //required dep -> cmp not active
 
 
@@ -254,7 +255,7 @@ TEST_F(DependencyManagerTestSuite, CxxDmGetInfo) {
 
     auto& cmp = mng.createComponent<Cmp1>();
     cmp.createProvidedService<TestService>().addProperty("key", "value");
-    cmp.createServiceDependency<TestService>().setVersionRange("[1,2)").setRequired(true);
+    cmp.createServiceDependency<TestService>().setVersionRange("[1,2)").setMinimalCardinality(1);
 
     auto infos = mng.getInfos();
     EXPECT_EQ(infos.size(), 1);
@@ -565,7 +566,7 @@ TEST_F(DependencyManagerTestSuite, RequiredDepsAreInjectedDuringStartStop) {
     auto& cmp = dm.createComponent<LifecycleComponent>()
             .setCallbacks(nullptr, &LifecycleComponent::start, &LifecycleComponent::stop, nullptr);
     cmp.createServiceDependency<TestService>()
-            .setRequired(true)
+            .setMinimalCardinality(1)
             .setCallbacks(&LifecycleComponent::setService)
             .setCallbacks(&LifecycleComponent::addService, &LifecycleComponent::remService);
     cmp.build();
@@ -609,7 +610,7 @@ TEST_F(DependencyManagerTestSuite, RemoveOwnDependencyShouldNotLeadToDoubleStop)
             .setCallbacks(nullptr, &LifecycleComponent::start, &LifecycleComponent::stop, nullptr);
     cmp.createProvidedService<TestService>();
     cmp.createServiceDependency<TestService>()
-            .setRequired(true);
+            .setMinimalCardinality(1);
     cmp.build();
     using celix::dm::ComponentState;
 
@@ -635,7 +636,7 @@ TEST_F(DependencyManagerTestSuite, RemoveOwnDependencyShouldNotLeadToDoubleStop)
 
     //When an additional required service dependency is added
     cmp.createServiceDependency<TestService>("DummyName")
-            .setRequired(true)
+            .setMinimalCardinality(1)
             .buildAsync();
 
     celix_bundleContext_waitForEvents(ctx);
@@ -714,10 +715,10 @@ TEST_F(DependencyManagerTestSuite, IntermediateStatesDuringInitDeinitStartingAnd
     cmp.createServiceDependency<TestService>()
             .setStrategy(celix::dm::DependencyUpdateStrategy::suspend)
             .setCallbacks([](std::shared_ptr<TestService> /*service*/, const std::shared_ptr<const celix::Properties>& /*properties*/){ std::cout << "Dummy set for svc callback\n"; })
-            .setRequired(false);
+            .setMinimalCardinality(0);
     cmp.createServiceDependency<TestService>("RequiredTestService")
             .setStrategy(celix::dm::DependencyUpdateStrategy::locking)
-            .setRequired(true);
+            .setMinimalCardinality(1);
     cmp.buildAsync();
 
     //Then the component state should become waiting for required
@@ -857,7 +858,7 @@ TEST_F(DependencyManagerTestSuite, DepsAreInjectedAsSharedPointers) {
     auto& cmp = dm.createComponent<LifecycleComponent>()
             .setCallbacks(nullptr, &LifecycleComponent::start, &LifecycleComponent::stop, nullptr);
     cmp.createServiceDependency<TestService>()
-            .setRequired(true)
+            .setMinimalCardinality(1)
             .setCallbacks(&LifecycleComponent::setService)
             .setCallbacks(&LifecycleComponent::addService, &LifecycleComponent::remService);
     cmp.build();
@@ -919,7 +920,7 @@ TEST_F(DependencyManagerTestSuite, DepsNoPropsAreInjectedAsSharedPointers) {
     auto& cmp = dm.createComponent<LifecycleComponent>()
             .setCallbacks(nullptr, &LifecycleComponent::start, &LifecycleComponent::stop, nullptr);
     cmp.createServiceDependency<TestService>()
-            .setRequired(true)
+            .setMinimalCardinality(1)
             .setCallbacks(&LifecycleComponent::setService)
             .setCallbacks(&LifecycleComponent::addService, &LifecycleComponent::remService);
     cmp.build();
@@ -1074,7 +1075,7 @@ TEST_F(DependencyManagerTestSuite, ExceptionsInLifecycle) {
         EXPECT_EQ(cmp.getState(), ComponentState::TRACKING_OPTIONAL);
 
         //required service -> should stop, but fails at stop and should become inactive (component will disable itself)
-        cmp.createServiceDependency<TestService>().setRequired(true).build();
+        cmp.createServiceDependency<TestService>().setMinimalCardinality(1).build();
         cmp.wait();
         EXPECT_EQ(cmp.getState(), ComponentState::INACTIVE);
         dm.clear();

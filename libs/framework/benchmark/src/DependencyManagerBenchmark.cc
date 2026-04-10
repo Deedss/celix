@@ -19,6 +19,7 @@
 
 #include <benchmark/benchmark.h>
 #include "celix/FrameworkFactory.h"
+#include "celix_dm_service_dependency.h"
 
 //note using c++ service for both the C and C++ benchmark, because this should not impact the performance.
 class IService {
@@ -81,7 +82,7 @@ static void createAndDestroyComponentTest(benchmark::State& state, bool cTest) {
 
             auto* dep = celix_dmServiceDependency_create();
             celix_dmServiceDependency_setService(dep, IService::NAME, nullptr, nullptr);
-            celix_dmServiceDependency_setRequired(dep, true);
+            celix_dmServiceDependency_setMinimalCardinality(dep, 1);
             celix_dmComponent_addServiceDependency(cmp, dep);
 
             celix_dependencyManager_addAsync(cMan, cmp);
@@ -94,7 +95,7 @@ static void createAndDestroyComponentTest(benchmark::State& state, bool cTest) {
             // This code gets timed
             auto& cmp = man->createComponent<TestComponent>();
             cmp.createProvidedService<IService>(IService::NAME);
-            cmp.createServiceDependency<IService>(IService::NAME).setRequired(true);
+            cmp.createServiceDependency<IService>(IService::NAME).setMinimalCardinality(1);
             man->buildAsync();
             man->wait();
             assert(cmp.getState() == ComponentState::TRACKING_OPTIONAL);
